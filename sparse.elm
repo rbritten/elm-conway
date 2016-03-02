@@ -1,4 +1,7 @@
 import Set
+import Time
+import Graphics.Collage exposing (..)
+import Color
 
 -- STATES
 
@@ -9,7 +12,7 @@ gosper  = Set.fromList [] -- todo
 
 -- LOGIC
 
-main = lift render (foldp (\_ -> step) diehard (fps 60))
+main = Signal.map render (Signal.foldp (\_ -> step) acorn (Time.fps 60))
 
 step state = Set.filter (\x ->
                let cnt  = countLive x state
@@ -18,9 +21,9 @@ step state = Set.filter (\x ->
                    bWhenDead = cnt == 3
                in (live && bWhenLive) || (not live && bWhenDead)) (cellsToCheck state)
 
-cellsToCheck = Set.foldl (\x out -> foldl Set.insert out (around x)) Set.empty
+cellsToCheck = Set.foldl (\x out -> List.foldl Set.insert out (around x)) Set.empty
 
-countLive pos state = foldl (\x cnt ->
+countLive pos state = List.foldl (\x cnt ->
                         if x `Set.member` state then cnt + 1 else cnt
                       ) 0 (around pos)
 
@@ -37,10 +40,10 @@ cellSize   = 10
 width      = 600
 height     = 600
 
-render state = Set.toList state |> map dot
+render state = Set.toList state |> List.map dot
                                 |> collage width height
 
-dot p = circle circleSize |> filled red
+dot p = circle circleSize |> filled Color.red
                           |> move (pos p)
 
 pos (x,y) = (toFloat (x*cellSize),toFloat (y*cellSize))
