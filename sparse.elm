@@ -14,17 +14,19 @@ gosper  = Set.fromList [] -- todo
 
 main = Signal.map render (Signal.foldp (\_ -> step) acorn (Time.fps 60))
 
+live x state = x `Set.member` state
+
 step state = Set.filter (\x ->
                let cnt  = countLive x state
-                   live = x `Set.member` state
+                   live' = live x state
                    bWhenLive = cnt == 3 || cnt == 4
                    bWhenDead = cnt == 3
-               in (live && bWhenLive) || (not live && bWhenDead)) (cellsToCheck state)
+               in (live' && bWhenLive) || (not live' && bWhenDead)) (cellsToCheck state)
 
 cellsToCheck = Set.foldl (\x out -> List.foldl Set.insert out (around x)) Set.empty
 
 countLive pos state = List.foldl (\x cnt ->
-                        if x `Set.member` state then cnt + 1 else cnt
+                        if live x state then cnt + 1 else cnt
                       ) 0 (around pos)
 
 around (x,y) = [
